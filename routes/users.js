@@ -24,14 +24,25 @@ const router = express.Router();
  *                     type: integer
  *                   name:
  *                     type: string
+ *       500:
+ *           description: Error retrieving user.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   error:
+ *                     type: string
+ *                     description: Error message.
  */
-router.get("/", (req, res) => {
-  res.json({
-    users: [
-      { id: 1, name: "TZ" },
-      { id: 2, name: "Summer" },
-    ],
-  });
+
+router.get("/", async (req, res) => {
+  try {
+    const result = await User.find({});
+    res.status(200).send({ users: result });
+  } catch (ex) {
+    res.status(500).send({ error: ex.message });
+  }
 });
 
 /**
@@ -86,11 +97,9 @@ router.get("/", (req, res) => {
 
 router.post("/", async (req, res) => {
   const { name, email, password } = req.body;
-  console.log({ name, email, password });
   const user = new User({ name, email, password });
   try {
     const result = await user.save();
-    console.log(result);
     res.status(200).json({ message: "User saved successfully" });
   } catch (ex) {
     res.status(500).json({ error: ex.message });
